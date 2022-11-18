@@ -31,14 +31,14 @@ class ReplayBuffer:
             self.full = True
         self.pos = (self.pos + 1) % self.size
 
-    def sample(self, batch_size=1, sample_len=80):
+    def sample(self, batch_size=1, max_sample_len=80):
         if self.full:
             indices = np.random.choice(self.size, batch_size)
-            end_indices = np.minimum(indices + sample_len, self.size)
+            end_indices = np.minimum(indices + max_sample_len, self.size)
             end_indices[(indices <= self.pos)*(self.pos < end_indices)] = self.pos
         else:
             indices = np.random.choice(self.pos, batch_size)
-            end_indices = np.minimum(indices + sample_len, self.pos)
+            end_indices = np.minimum(indices + max_sample_len, self.pos)
 
         return self.obs[indices:end_indices], self.hidden[indices], self.cell[indices], \
                self.actions[indices:end_indices], self.rewards[indices:end_indices], self.dones[indices:end_indices]

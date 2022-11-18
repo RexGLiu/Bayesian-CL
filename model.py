@@ -17,21 +17,27 @@ class Controller(nn.Module):
 
     def forward(self, x, hidden=None, cell=None):
         if hidden is None:
-            hidden = np.zeros(self._hidden_dim)
+            hidden = torch.zeros(self._hidden_dim)
         if cell is None:
-            cell = np.zeros(self._hidden_dim)
+            cell = torch.zeros(self._hidden_dim)
 
         x, (hidden, cell) = self.LSTM(x, (hidden, cell))
-        y = self.fc(x)
-        y = F.sigmoid(y)
+        y = self.hidden_to_policy(x)
         return x, (y, hidden, cell)
+
+    def hidden_to_policy(self, hidden):
+        y = self.fc(hidden)
+        y = F.sigmoid(y)
+        return y
 
     @staticmethod
     def sample(p, thresh=0.0):
-        if thresh=0.0:
+        if type(p) is torch.Tensor:
+            p = p.numpy()
+        if thresh == 0.0:
             return np.random.binomial(1, p=p)
         else:
-            return (p>thresh).astype(np.int_)
+            return (p > thresh).astype(np.int_)
 
     @property
     def hidden_dim(self):
